@@ -14,10 +14,8 @@ class CPU:
 
         # internal registers:
         # program counter
-        self.PC = 0
+        self.pc = 0
         # instruction register
-        # memory address register
-        # memory data register
         # flags
 
     def load(self):
@@ -73,4 +71,11 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+    def ram_read(self, mar):
+        # return value stored at address
+        mdr = self.ram[mar]
+        return mdr
+
+    def ram_write(self, mar. mdr):
+        # write value to address
+        self.ram[mar] = mdr
