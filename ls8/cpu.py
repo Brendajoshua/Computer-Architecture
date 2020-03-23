@@ -2,6 +2,8 @@
 
 import sys
 
+HLT = 0b00000001
+
 class CPU:
     """Main CPU class."""
 
@@ -15,7 +17,6 @@ class CPU:
         # internal registers:
         # program counter
         self.pc = 0
-        # instruction register
         # flags
 
     def load(self):
@@ -71,9 +72,33 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
+        while True:
+            # instruction Register
+            ir = self.pc
+            # read command
+            op = self.ram_read(ir)
+            # read operands
+            operand_a = self.ram_read(ir + 1)
+            operand_b = self.ram_read(ir + 2)
+
+            # execute command
+            if op == HLT:
+                break
+            else:
+                print(f"Command not found: {bin(op)}")
+
+            # check if command sets pc
+            # if not, update pc
+            if op & 16 == 0:
+                num_operands = 0
+                if op & 64 != 0: num_operands += 1
+                elif op & 128 != 0: num_operands += 2
+                self.pc += num_operands + 1
+
+
     def ram_read(self, mar):
         # return value stored at address
-        mdr = self.ram[mar]
+        mdr = self.ram[mar] # mdr - Memory Data Register
         return mdr
 
     def ram_write(self, mar. mdr):
