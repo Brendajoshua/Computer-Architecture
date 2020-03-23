@@ -3,6 +3,8 @@
 import sys
 
 HLT = 0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
 
 class CPU:
     """Main CPU class."""
@@ -83,7 +85,14 @@ class CPU:
 
             # execute command
             if op == HLT:
+                # halt program
                 break
+            elif op == LDI:
+                # set value of register to an int
+                self.reg[operand_a] = operand_b
+            elif op = PRN:
+                # print value stored in given register
+                print(self.reg[operand_a])
             else:
                 print(f"Command not found: {bin(op)}")
 
