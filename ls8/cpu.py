@@ -23,24 +23,35 @@ class CPU:
 
     def load(self):
         """Load a program into memory."""
+        # check for filename arg
+        if len(sys.argv) != 2:
+            print("ERROR: must have file name")
+            sys.exit(1)
 
         address = 0
 
-        # For now, we've just hardcoded a program:
+        try:
+            with open(sys.argv[1]) as f:
+                # read all the lines
+                for line in f:
+                    # parse out comments
+                    comment_split = line.strip().split("#")
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+                    value = comment_split[0].strip()
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+                    # ignore blank lines
+                    if value == "":
+                        continue
+
+                    # cast the numbers from strings to ints
+                    num = int(value, 2)
+
+                    self.ram[address] = num
+                    address += 1
+
+        except FileNotFoundError:
+            print("File not found")
+            sys.exit(2)
 
 
     def alu(self, op, reg_a, reg_b):
@@ -48,7 +59,7 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
+        # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -60,8 +71,8 @@ class CPU:
 
         print(f"TRACE: %02X | %02X %02X %02X |" % (
             self.pc,
-            #self.fl,
-            #self.ie,
+            # self.fl,
+            # self.ie,
             self.ram_read(self.pc),
             self.ram_read(self.pc + 1),
             self.ram_read(self.pc + 2)
@@ -100,8 +111,10 @@ class CPU:
             # if not, update pc
             if op & 16 == 0:
                 num_operands = 0
-                if op & 64 != 0: num_operands += 1
-                elif op & 128 != 0: num_operands += 2
+                if op & 64 != 0:
+                    num_operands += 1
+                elif op & 128 != 0:
+                    num_operands += 2
                 self.pc += num_operands + 1
 
 
@@ -110,6 +123,6 @@ class CPU:
         mdr = self.ram[mar] # mdr - Memory Data Register
         return mdr
 
-    def ram_write(self, mar. mdr):
+    def ram_write(self, mar, mdr):
         # write value to address
         self.ram[mar] = mdr
