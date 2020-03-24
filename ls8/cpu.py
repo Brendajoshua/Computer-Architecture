@@ -5,6 +5,10 @@ import sys
 HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
+ADD = 0b10100000
+SUB = 0b10100001
+MUL = 0b10100010
+DIV = 0b10100011
 
 class CPU:
     """Main CPU class."""
@@ -57,9 +61,17 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if op == "ADD":
+        if op == ADD:
             self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
+        elif op == SUB:
+            self.reg[reg_a] -= self.reg[reg_b]
+        elif op == MUL:
+            self.reg[reg_a] *= self.reg[reg_b]
+        elif op == DIV:
+            if self.reg[reg_b] == 0:
+                print("ERROR: cannot divide by zero")
+                sys.exit(1)
+            self.reg[reg_a] /= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -97,13 +109,15 @@ class CPU:
             # execute command
             if op == HLT:
                 # halt program
-                break
+                sys.exit(0)
             elif op == LDI:
                 # set value of register to an int
                 self.reg[operand_a] = operand_b
-            elif op = PRN:
+            elif op == PRN:
                 # print value stored in given register
                 print(self.reg[operand_a])
+            elif op in [ADD, SUB, MUL, DIV]:
+                self.alu(op, operand_a, operand_b)
             else:
                 print(f"Command not found: {bin(op)}")
 
