@@ -19,6 +19,8 @@ class CPU:
         self.ram = [0] * 256
         # register
         self.reg = [0] * 8
+        # reset stack pointer
+        self.reg[7] = 0xF4
 
         # internal registers:
         # program counter
@@ -131,16 +133,13 @@ class CPU:
                     self.branchtable[op](operand_a, operand_b)
             else:
                 print(f"Command not found: {bin(op)}")
+                sys.exit(1)
 
             # check if command sets pc
             # if not, update pc
             if op & 0b00010000 == 0:
-                num_operands = 0
-                if op >> 6 == 1:
-                    num_operands = 1
-                elif op >> 6 == 2:
-                    num_operands = 2
-                self.pc += num_operands + 1
+                # op: AABCDDDD, where AA == num operands
+                self.pc += (op >> 6) + 1
 
 
     def ram_read(self, mar):
