@@ -6,6 +6,8 @@ PRINT_NUM = 3
 SAVE = 4  # save a value to a register
 PRINT_REGISTER = 5  # print the value in a register
 ADD = 6  # add 2 registers, store the result in 1st reg
+PUSH = 7
+POP = 8
 
 memory = [0] * 256
 
@@ -38,6 +40,9 @@ register = [0] * 8
 
 # program counter
 pc = 0
+
+# stack pointer is R7
+sp = 7
 
 if len(sys.argv) != 2:
     print("ERROR: must have file name")
@@ -73,6 +78,24 @@ while True:
         pc += 3
     elif command == HALT:
         sys.exit(0)
+    elif command == PUSH:
+        # grab the register argument
+        reg = memory[pc + 1]
+        val = register[reg]
+        # decrement stack pointer
+        register[sp] -= 1
+        # copy the value in the given register to the address pointed to by sp
+        memory[register[sp]] = val
+        pc += 2
+    elif command == POP:
+        # grab the balue from the top of the stack
+        reg = memory[pc + 1]
+        val = memory[register[sp]]
+        # copy the value from the address pointed to by sp to the given register
+        register[reg] = val
+        # increment sp
+        register[sp] += 1
+        pc += 2
     else:
         print(f"I did not understand that command: {command}")
         sys.exit(1)
