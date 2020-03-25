@@ -25,6 +25,17 @@ class CPU:
         self.pc = 0
         # flags
 
+        # branch table
+        self.branchtable = {
+            HLT: self.HLT,
+            LDI: self.LDI,
+            PRN: self.PRN,
+            ADD: self.alu,
+            SUB: self.alu,
+            MUL: self.alu,
+            DIV: self.alu,
+        }
+
     def load(self):
         """Load a program into memory."""
         # check for filename arg
@@ -107,28 +118,28 @@ class CPU:
             operand_b = self.ram_read(ir + 2)
 
             # execute command
-            if op == HLT:
-                # halt program
-                sys.exit(0)
-            elif op == LDI:
-                # set value of register to an int
-                self.reg[operand_a] = operand_b
-            elif op == PRN:
-                # print value stored in given register
-                print(self.reg[operand_a])
-            elif op in [ADD, SUB, MUL, DIV]:
-                self.alu(op, operand_a, operand_b)
+            if op in self.branchtable:
+                # check if alu operation
+                if op & 0b00100000 != 0:
+                    self.branchtable[op](op, operand_a, operand_b)
+                # check number of operands
+                elif op >> 6 == 0:
+                    self.branchtable[op]()
+                elif op >> 6 == 1:
+                    self.branchtable[op](operand_a)
+                elif op >> 6 == 2:
+                    self.branchtable[op](operand_a, operand_b)
             else:
                 print(f"Command not found: {bin(op)}")
 
             # check if command sets pc
             # if not, update pc
-            if op & 16 == 0:
+            if op & 0b00010000 == 0:
                 num_operands = 0
-                if op & 64 != 0:
-                    num_operands += 1
-                elif op & 128 != 0:
-                    num_operands += 2
+                if op >> 6 == 1:
+                    num_operands = 1
+                elif op >> 6 == 2:
+                    num_operands = 2
                 self.pc += num_operands + 1
 
 
@@ -140,3 +151,14 @@ class CPU:
     def ram_write(self, mar, mdr):
         # write value to address
         self.ram[mar] = mdr
+
+    def HLT(self):
+        sys.exit(0)
+
+    def LDI(self, operand_a, operand_b):
+        # set value of register to an int
+        self.reg[operand_a] = operand_b
+
+    def PRN(self, operand_a):
+        # print value stored in given register
+        print(self.reg[operand_a])
