@@ -21,6 +21,8 @@ SHR = 0b10101101
 XOR = 0b10101011
 PUSH = 0b01000101
 POP = 0b01000110
+CALL = 0b01010000
+RET = 0b00010001
 
 class CPU:
     """Main CPU class."""
@@ -61,6 +63,8 @@ class CPU:
             XOR: self.alu,
             PUSH: self.PUSH,
             POP: self.POP,
+            CALL: self.CALL,
+            RET: self.RET,
         }
 
     def load(self):
@@ -227,4 +231,18 @@ class CPU:
         # copy the value from the address pointed to by sp to the given register
         self.reg[reg_a] = self.ram[self.reg[7]]
         # increment sp
+        self.reg[7] += 1
+
+    def CALL(self, reg_a):
+        # push return address on to stack
+        ret_addr = self.pc + 2
+        self.reg[7] -= 1
+        self.ram[self.reg[7]] = ret_addr
+
+        # set pc to address stored in given register
+        self.pc = self.reg[reg_a]
+
+    def RET(self):
+        # pop the value from top of the stack and store it in the pc
+        self.pc = self.ram[self.reg[7]]
         self.reg[7] += 1
